@@ -21,13 +21,12 @@
 require('dotenv').config();
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 
-const infuraKey = process.env.INFURA_KEY;
+const infuraKey = process.env.INFURA_KEY; 
 
 const mnemonic = process.env.MNEMONIC; 
 //
 // const fs = require('fs');
 //const mnemonic = fs.readFileSync(".secret").toString().trim();
-
 
 
 module.exports = {
@@ -43,10 +42,13 @@ module.exports = {
 
   networks: {
     rinkeby: {
-    provider: () => new HDWalletProvider(mnemonic, `https://rinkeby.infura.io/v3/${infuraKey}`),           
+    networkCheckTimeout: 50000, 
+    provider: () => new HDWalletProvider(mnemonic, `wss://rinkeby.infura.io/ws/v3/${infuraKey}`),         
     network_id: 4,       
-    gas: 8500000,           
-    gasPrice: 20000000000,  
+    gas: 5500000,
+    confirmations: 2,
+    timeoutBlocks: 200,
+    skipDryRun: true          
      },
   },
 
@@ -59,7 +61,7 @@ module.exports = {
   // Configure your compilers
   compilers: {
     solc: {
-      version: "0.8.0",    // Fetch exact version from solc-bin (default: truffle's version)
+      version: "0.8.1",    // Fetch exact version from solc-bin (default: truffle's version)
       // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
       // settings: {          // See the solidity docs for advice about optimization and evmVersion
       //  optimizer: {

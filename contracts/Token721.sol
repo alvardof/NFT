@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.1;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
@@ -15,16 +15,17 @@ contract Token721 is ERC721, ERC721Enumerable, ERC721URIStorage, Pausable, Acces
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     Counters.Counter private _tokenIdCounter;
+    string public baseURI;
     mapping(uint256 => string) private _hashIPFS;
 
     constructor() ERC721("Token721", "FJA") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(PAUSER_ROLE, msg.sender);
         _grantRole(MINTER_ROLE, msg.sender);
+        baseURI = "https://ipfs.io/ipfs/";
     }
 
 
-    //      mint
 
     function mint(address _to, string[] memory _hashes) public onlyRole(MINTER_ROLE){
 
@@ -39,13 +40,10 @@ contract Token721 is ERC721, ERC721Enumerable, ERC721URIStorage, Pausable, Acces
     }
 
 
-    //
 
 
-
-
-    function _baseURI() internal pure override returns (string memory) {
-        return "https://ipfs.io/ipfs/";
+    function _baseURI() internal view virtual override returns (string memory) {
+        return baseURI;
     }
 
     
@@ -68,7 +66,6 @@ contract Token721 is ERC721, ERC721Enumerable, ERC721URIStorage, Pausable, Acces
         _setTokenURI(tokenId, uri);
     }
     
-
     
     function _beforeTokenTransfer(address from, address to, uint256 tokenId)
         internal
@@ -91,10 +88,22 @@ contract Token721 is ERC721, ERC721Enumerable, ERC721URIStorage, Pausable, Acces
     function tokenURI(uint256 tokenId)
         public
         view
+        virtual
         override(ERC721, ERC721URIStorage)
         returns (string memory)
     {
-        return super.tokenURI(tokenId);
+        require(
+            _exists(tokenId),
+            "ERC721Metadata: URI query for nonexistent token"
+        );
+
+        string memory currentBaseURI = _baseURI();
+        return
+            (bytes(currentBaseURI).length > 0 &&
+                bytes(_hashIPFS[tokenId]).length > 0)
+            ? string(abi.encodePacked(currentBaseURI, _hashIPFS[tokenId]))
+            : "";
+        
     }
     
 
